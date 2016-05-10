@@ -1,0 +1,67 @@
+<!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:generic:version{7412167c-06e9-4698-aff2-e63eb59037e7} -->
+{
+	_class = "CParticleSystemDefinition"
+	m_flConstantRadius = 48.000000
+	m_flConstantLifespan = 0.000000
+	m_nConstantSequenceNumber = 6
+	m_nMaxParticles = 4
+	m_Operators =
+	[
+		{
+			_class = "C_OP_BasicMovement"
+		},
+		{
+			_class = "C_OP_MaxVelocity"
+			m_flMaxVelocity = 600.000000
+			m_nOverrideCP = 2
+			m_Notes = "Through the Movement Max Velocity op, projectiles get their velocity automatically via CP2 through code. IMPORTANT: It\'s best not to modify this op for custom effects!"
+		},
+		{
+			_class = "C_OP_Decay"
+			m_nOpEndCapState = 1
+		},
+		{
+			_class = "C_OP_SetChildControlPoints"
+			m_nFirstControlPoint = 3
+			m_Notes = "Sets up control points for the child effects below. IMPORTANT: It\'s best not to modify this op for custom effects!"
+		},
+	]
+	m_Initializers =
+	[
+		{
+			_class = "C_INIT_CreateWithinSphere"
+		},
+	]
+	m_Emitters =
+	[
+		{
+			_class = "C_OP_InstantaneousEmitter"
+			m_nParticlesToEmit = 1
+			m_Notes = "Emits a single \"master\" particle for the projectile. IMPORTANT: It\'s best not to modify this op for custom effects!"
+		},
+	]
+	m_ForceGenerators =
+	[
+		{
+			_class = "C_OP_AttractToControlPoint"
+			m_fForceAmount = 1000000.000000
+			m_fFalloffPower = 0.000000
+			m_nControlPointNumber = 1
+			m_Notes = "This Force Generator pulls the projectile effect toward its target (CP1). Though the force is set extraordinarily high, the effect\'s speed is limited by the Movement Max Velocity op. IMPORTANT: It\'s best not to modify this op for custom effects!"
+		},
+	]
+	m_Children =
+	[
+		{
+			m_ChildRef = resource:"particles/basic_projectile/basic_projectile_explosion.vpcf"
+			m_bEndCap = true
+		},
+		{
+			m_ChildRef = resource:"particles/basic_projectile/basic_projectile_trail.vpcf"
+		},
+		{
+			m_ChildRef = resource:"particles/basic_projectile/basic_projectile_launch.vpcf"
+		},
+	]
+	m_bShouldSort = false
+}
