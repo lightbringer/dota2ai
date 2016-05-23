@@ -35,7 +35,7 @@ No. This is a copy of the base game (a custom game). You can't use this to impro
 This is how you start the mod. However, unless you configured config.lua to point to a working bot web service, nothing will happen.
 
 ##Assuming the mod works, how do I write bots?
-The mod assumes that there are a number of POST urls that accept and return JSON relative to the base URL that you configure in config.lua. In the nearer future, I will document and extend the content of the expected JSON objects here on github. For now, I'm afraid you have to reverse engineer my LUA and Java code if you want to start writing.
+The mod assumes that there are a number of POST urls that accept and return JSON relative to the base URL that you configure in config.lua. I posted a brief description of them along with the transmitted messages [here](https://github.com/lightbringer/dota2ai/wiki/API). I tried to be brief and to give you "the big picture". For more detail, have a look at my LUA and Java code if you want to start writing.
 
 ##What exactly is this reference implementation?
 It's a Maven project that I created with eclipse to debug basic commands. It runs on Tomcat 8. Stackexchange or similar might be a good starting point to read up on these things. The project is a simple state machine for a Lina, that can go to the middle lane, farm, and randomly cast spells. She also retreats if her health falls under a certain percentage. You can control her with same basic commands in team chat like "lina go" or "lina buy tango". Not very complex, but everybody was to start somewhere :)
