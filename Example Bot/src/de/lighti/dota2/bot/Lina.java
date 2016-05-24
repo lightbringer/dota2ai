@@ -32,9 +32,8 @@ public class Lina extends BaseBot {
         return (float) Math.hypot( posB[0] - posA[0], posB[1] - posA[1] );
     }
 
-    private static Set<BaseEntity> findEntitiesInRange( World world, BaseEntity center, float range, int team ) {
-        final Set<BaseEntity> result = world.getEntities().values().stream().filter( e -> ((BaseNPC) e).getTeam() == team )
-                        .filter( e -> distance( center, e ) < range ).collect( Collectors.toSet() );
+    private static Set<BaseEntity> findEntitiesInRange( World world, BaseEntity center, float range ) {
+        final Set<BaseEntity> result = world.getEntities().values().stream().filter( e -> distance( center, e ) < range ).collect( Collectors.toSet() );
         result.remove( center );
         return result;
     }
@@ -49,6 +48,105 @@ public class Lina extends BaseBot {
         System.out.println( "Creating Lina" );
         myLevels = new int[5];
 
+    }
+
+    @Override
+    public LevelUp levelUp() {
+        LEVELUP.setAbilityIndex( -1 );
+
+        if (myLevels[0] < 4) {
+            LEVELUP.setAbilityIndex( 0 );
+        }
+        else if (myLevels[1] < 4) {
+            LEVELUP.setAbilityIndex( 1 );
+        }
+        else if (myLevels[2] < 4) {
+            LEVELUP.setAbilityIndex( 2 );
+        }
+        else if (myLevels[3] < 3) {
+            LEVELUP.setAbilityIndex( 3 );
+        }
+        else if (myLevels[4] < 10) {
+            LEVELUP.setAbilityIndex( 4 );
+        }
+        System.out.println( "LevelUp " + LEVELUP.getAbilityIndex() );
+        return LEVELUP;
+    }
+
+    @Override
+    public void onChat( ChatEvent e ) {
+        switch (e.getText()) {
+            case "lina go":
+                mode = Mode.ENABLED;
+                break;
+            case "lina stop":
+                shouldRetreat = true;
+                mode = Mode.DISABLED;
+                break;
+            case "lina buy tango":
+                shouldBuyTango = true;
+                break;
+        }
+    }
+
+    @Override
+    public void reset() {
+        System.out.println( "Resetting" );
+        myLevels = new int[5];
+    }
+
+    @Override
+    public Select select() {
+        SELECT.setHero( MY_HERO_NAME );
+        return SELECT;
+    }
+
+    @Override
+    public Command update( World world ) {
+//        System.out.println( "I see " + world.searchIndexByClass( Tree.class ).size() + " trees" );
+        if (shouldBuyTango) {
+            shouldBuyTango = false;
+            return buy( "item_tango" );
+        }
+        if (mode == Mode.DISABLED) {
+            if (shouldRetreat) {
+                shouldRetreat = false;
+                return retreat( world );
+            }
+
+            return NOOP;
+        }
+
+//        System.out.println( world.getEntities().size() + " present" );
+//        world.getEntities().values().stream().filter( e -> e.getClass() == Building.class ).forEach( e -> System.out.println( e ) );
+//        world.getEntities().values().stream().filter( e -> e.getClass() == Tower.class ).forEach( e -> System.out.println( e ) );
+        final int myIndex = world.searchIndexByName( MY_HERO_NAME );
+        if (myIndex < 0) {
+            //I'm probably dead
+            System.out.println( "I'm dead?" );
+            reset();
+            return NOOP;
+        }
+
+        final Hero lina = (Hero) world.getEntities().get( myIndex );
+//        for (final Ability a : lina.getAbilities().values()) {
+//            myLevels[a.getAbilityIndex()] = a.getLevel();
+//            System.out.println( a );
+//        }
+
+        if (lina.getHealth() <= lina.getMaxHealth() * 0.4) {
+            return retreat( world );
+        }
+
+        final float range = lina.getAttackRange();
+        final Set<BaseEntity> e = findEntitiesInRange( world, lina, range ).stream().filter( p -> p instanceof BaseNPC )
+                        .filter( p -> ((BaseNPC) p).getTeam() == 3 ).collect( Collectors.toSet() );
+        if (!e.isEmpty()) {
+            return attack( lina, e, world );
+        }
+        else {
+            return move( lina, world );
+        }
     }
 
     private Command attack( Hero lina, Set<BaseEntity> e, World world ) {
@@ -115,32 +213,10 @@ public class Lina extends BaseBot {
         return CAST;
     }
 
-    @Override
-    public LevelUp levelUp() {
-        LEVELUP.setAbilityIndex( -1 );
-
-        if (myLevels[0] < 4) {
-            LEVELUP.setAbilityIndex( 0 );
-        }
-        else if (myLevels[1] < 4) {
-            LEVELUP.setAbilityIndex( 1 );
-        }
-        else if (myLevels[2] < 4) {
-            LEVELUP.setAbilityIndex( 2 );
-        }
-        else if (myLevels[3] < 3) {
-            LEVELUP.setAbilityIndex( 3 );
-        }
-        else if (myLevels[4] < 10) {
-            LEVELUP.setAbilityIndex( 4 );
-        }
-        System.out.println( "LevelUp " + LEVELUP.getAbilityIndex() );
-        return LEVELUP;
-    }
-
     private Command move( Hero lina, World world ) {
         //Walk up to the nearest enemy
-        final Set<BaseEntity> en = findEntitiesInRange( world, lina, Float.POSITIVE_INFINITY, 3 );
+        final Set<BaseEntity> en = findEntitiesInRange( world, lina, Float.POSITIVE_INFINITY ).stream().filter( p -> p instanceof BaseNPC )
+                        .filter( p -> ((BaseNPC) p).getTeam() == 3 ).collect( Collectors.toSet() );
         final BaseEntity target = en.stream().sorted( ( e1, e2 ) -> Float.compare( distance( lina, e1 ), distance( lina, e2 ) ) )
                         .filter( f -> f.getClass() != Tower.class ).findFirst().orElse( null );
         if (target == null) {
@@ -159,28 +235,6 @@ public class Lina extends BaseBot {
         return MOVE;
     }
 
-    @Override
-    public void onChat( ChatEvent e ) {
-        switch (e.getText()) {
-            case "lina go":
-                mode = Mode.ENABLED;
-                break;
-            case "lina stop":
-                shouldRetreat = true;
-                mode = Mode.DISABLED;
-                break;
-            case "lina buy tango":
-                shouldBuyTango = true;
-                break;
-        }
-    }
-
-    @Override
-    public void reset() {
-        System.out.println( "Resetting" );
-        myLevels = new int[5];
-    }
-
     private Command retreat( World world ) {
         //Retreat at 30% health
         System.out.println( "Lina is retreating" );
@@ -192,57 +246,5 @@ public class Lina extends BaseBot {
         MOVE.setZ( targetPos[2] );
 
         return MOVE;
-    }
-
-    @Override
-    public Select select() {
-        SELECT.setHero( MY_HERO_NAME );
-        return SELECT;
-    }
-
-    @Override
-    public Command update( World world ) {
-        if (shouldBuyTango) {
-            shouldBuyTango = false;
-            return buy( "item_tango" );
-        }
-        if (mode == Mode.DISABLED) {
-            if (shouldRetreat) {
-                shouldRetreat = false;
-                return retreat( world );
-            }
-
-            return NOOP;
-        }
-
-//        System.out.println( world.getEntities().size() + " present" );
-//        world.getEntities().values().stream().filter( e -> e.getClass() == Building.class ).forEach( e -> System.out.println( e ) );
-//        world.getEntities().values().stream().filter( e -> e.getClass() == Tower.class ).forEach( e -> System.out.println( e ) );
-        final int myIndex = world.searchIndexByName( MY_HERO_NAME );
-        if (myIndex < 0) {
-            //I'm probably dead
-            System.out.println( "I'm dead?" );
-            reset();
-            return NOOP;
-        }
-
-        final Hero lina = (Hero) world.getEntities().get( myIndex );
-//        for (final Ability a : lina.getAbilities().values()) {
-//            myLevels[a.getAbilityIndex()] = a.getLevel();
-//            System.out.println( a );
-//        }
-
-        if (lina.getHealth() <= lina.getMaxHealth() * 0.4) {
-            return retreat( world );
-        }
-
-        final float range = lina.getAttackRange();
-        final Set<BaseEntity> e = findEntitiesInRange( world, lina, range, 3 );
-        if (!e.isEmpty()) {
-            return attack( lina, e, world );
-        }
-        else {
-            return move( lina, world );
-        }
     }
 }

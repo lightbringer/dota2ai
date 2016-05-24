@@ -10,6 +10,14 @@ function Dota2AI:JSONChat(event)
 
 	return package.loaded['game/dkjson'].encode(jsonEvent)
 end
+
+ function Dota2AI:JSONtree(eTree)	
+	local tree = {}
+	tree.origin = VectorToArray(eTree:GetOrigin())
+	tree.type = "Tree"
+	return tree
+ end
+ 
  function Dota2AI:JSONunit(eUnit)	
 	local unit = {}
 	unit.level = eUnit:GetLevel()
@@ -83,6 +91,17 @@ end
 function Dota2AI:JSONWorld(eHero)	
 	local world = {}
 	world.entities = {}
+	
+
+	--TODO there are apparently around 2300 trees on the map. Sending those that are NOT standing might be more efficient
+	local tree = Entities:FindByClassname(nil, "ent_dota_tree")
+	while tree ~= nil do
+		if eHero:CanEntityBeSeenByMyTeam(tree) and tree:IsStanding() then
+			world.entities[tree:entindex()]=self:JSONtree(tree)
+		end		
+		tree = Entities:FindByClassname(tree, "ent_dota_tree")
+	end
+
 	
 	local allUnits = FindUnitsInRadius(eHero:GetTeamNumber(), 
                               eHero:GetOrigin(),

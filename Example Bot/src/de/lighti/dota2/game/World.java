@@ -1,8 +1,10 @@
 package de.lighti.dota2.game;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class World {
     private Map<Integer, BaseEntity> entities;
@@ -19,6 +21,10 @@ public class World {
         return entities.entrySet().stream().filter( p -> p.getValue() == target ).findFirst().get().getKey();
     }
 
+    public <T> Collection<T> searchIndexByClass( Class<T> clazz ) {
+        return (Collection<T>) entities.entrySet().stream().filter( e -> e.getValue().getClass() == clazz ).collect( Collectors.toSet() );
+    }
+
     public int searchIndexByName( String string ) {
         final Entry<Integer, BaseEntity> e = entities.entrySet().stream().filter( p -> p.getValue().getName().equals( string ) ).findAny().orElse( null );
         if (e == null) {
@@ -33,18 +39,18 @@ public class World {
         this.entities = entities;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append( "World [entities=" );
-        for (final Map.Entry<Integer, BaseEntity> e : entities.entrySet()) {
-            builder.append( e.getKey() );
-            builder.append( " = " );
-            builder.append( e.getValue() );
-            builder.append( "\n" );
-        }
-        builder.append( "]" );
-        return builder.toString();
-    }
+//    @Override
+//    public String toString() {
+//        final StringBuilder builder = new StringBuilder();
+//        builder.append( "World [entities=" );
+//        for (final Map.Entry<Integer, BaseEntity> e : entities.entrySet()) {
+//            builder.append( e.getKey() );
+//            builder.append( " = " );
+//            builder.append( e.getValue() );
+//            builder.append( "\n" );
+//        }
+//        builder.append( "]" );
+//        return builder.toString();
+//    }
 
 }

@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo( use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type" )
 @JsonSubTypes( { @Type( name = "Hero", value = Hero.class ), @Type( name = "BaseNPC", value = BaseNPC.class ), @Type( name = "Tower", value = Tower.class ),
-                @Type( name = "Building", value = Building.class ), @Type( name = "Ability", value = Ability.class ) })
+                @Type( name = "Building", value = Building.class ), @Type( name = "Tree", value = Tree.class ),
+                @Type( name = "Ability", value = Ability.class ) })
 public abstract class BaseEntity {
     protected float[] origin;
 
