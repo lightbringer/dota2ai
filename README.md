@@ -34,6 +34,8 @@ No. This is a copy of the base game (a custom game). You can't use this to impro
  
 This is how you start the mod. However, unless you configured config.lua to point to a working bot web service, nothing will happen.
 
+**Note:** I also uploaded the current version to the [Steam Workshop](http://steamcommunity.com/sharedfiles/filedetails/?id=770366571)
+
 ##Assuming the mod works, how do I write bots?
 The mod assumes that there are a number of POST urls that accept and return JSON relative to the base URL that you configure in config.lua. I posted a brief description of them along with the transmitted messages [here](https://github.com/lightbringer/dota2ai/wiki/API). I tried to be brief and to give you "the big picture". For more detail, have a look at my LUA and Java code if you want to start writing.
 
