@@ -2,6 +2,7 @@
 	request = CreateHTTPRequest( "POST", Dota2AI.baseURL .. "/select")
 	request:SetHTTPRequestHeaderValue("Accept", "application/json")
 	request:SetHTTPRequestHeaderValue("X-Jersey-Tracing-Threshold", "VERBOSE" )
+	request:SetHTTPRequestHeaderValue("Content-Length", "0")
 	request:Send( function( result ) 
     
 	if result["StatusCode"] == 200 then       

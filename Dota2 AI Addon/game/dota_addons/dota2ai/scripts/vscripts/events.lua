@@ -84,6 +84,7 @@ end
   function Dota2AI:BotLevelUp(heroEntity) 
 	  request = CreateHTTPRequest( "POST", Dota2AI.baseURL .. "/levelup")
 	  request:SetHTTPRequestHeaderValue("Accept", "application/json")
+	  request:SetHTTPRequestHeaderValue("Content-Length", "0")
 	  request:Send( function( result ) 
 		  if result["StatusCode"] == 200 then       
 			self:ParseHeroLevelUp(heroEntity, result['Body']) 
