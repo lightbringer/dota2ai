@@ -12,7 +12,9 @@ function Dota2AI:OnGameRulesStateChange()
     self:Reset()
   elseif nNewState == DOTA_GAMERULES_STATE_HERO_SELECTION then
     print( "OnGameRulesStateChange: Hero Selection" )
-	--NOP
+	BotPick()
+	PlayerResource:SetCustomTeamAssignment( 0, DOTA_TEAM_FIRST  ) -- put PlayerID 0 on Radiant team (== team 2)
+	--Tutorial:StartTutorialMode()	
   elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
     print( "OnGameRulesStateChange: Pre Game Selection" )
     SendToServerConsole( "dota_dev forcegamestart" ) -- Skip the draft process
@@ -45,15 +47,19 @@ end
 
  function Dota2AI:OnHeroPicked (event)
 	local userid = event.player
-	local heroindex = event.heroindex;
-	local class = event.hero   
-	local heroEntity = EntIndexToHScript(heroindex)
-	if heroEntity:IsControllableByAnyPlayer() then 
-		--heroEntity:SetControllableByPlayer(2, false) -- TODO would revoke control from the local client
-		heroEntity:SetContextThink( "DotaPvP:BotThink", function() return Dota2AI:BotThink(heroEntity) end, 0.25 )
-	end
+	
+	-- limited to player one for now
+	if userid == 1 then
+		local heroindex = event.heroindex;
+		local class = event.hero   
+		local heroEntity = EntIndexToHScript(heroindex)
+		if heroEntity:IsControllableByAnyPlayer() then 
+			--heroEntity:SetControllableByPlayer(2, false) -- TODO would revoke control from the local client
+			heroEntity:SetContextThink( "DotaPvP:BotThink", function() return Dota2AI:BotThink(heroEntity) end, 0.25 )
+		end
 	  
-	Say(nil, "Bot (team = " .. heroEntity:GetTeam()..", user=".. userid.." picked " .. heroEntity:GetName(), false)      
+		Say(nil, "Bot (team = " .. heroEntity:GetTeam()..", user=".. userid.." picked " .. heroEntity:GetName(), false)      
+	end
  end
 
 
@@ -156,3 +162,30 @@ end
     end
   end )
  end
+
+ function Dota2AI:OnBaseURLChanged(event)
+	Dota2AI.baseURL = CustomNetTables:GetTableValue( "game_state", "base_url" )["value"]
+	print("New base URL " .. Dota2AI.baseURL)
+ end
+ 
+ function BotPick()
+	local baseURL = CustomNetTables:GetTableValue( "game_state", "base_url" )["value"]
+	request = CreateHTTPRequest( "POST", baseURL .. "/select")
+	request:SetHTTPRequestHeaderValue("Accept", "application/json")
+	request:SetHTTPRequestHeaderValue("X-Jersey-Tracing-Threshold", "VERBOSE" )
+	request:SetHTTPRequestHeaderValue("Content-Length", "0")
+	request:Send( function( result ) 
+    
+	if result["StatusCode"] == 200 then       
+      local command = package.loaded['game/dkjson'].decode(result['Body'])    
+	  print("Bot returned: \"" .. command.hero .. "\"")
+		CreateHeroForPlayer( command.hero, PlayerResource:GetPlayer(0)	) 
+    else
+      Dota2AI.Error = true 
+      for k,v in pairs( result ) do
+        Warning( string.format( "%s : %s\n", k, v ) )
+      end   
+    end
+  end )
+ end
+

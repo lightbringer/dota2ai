@@ -1,0 +1,32 @@
+<root>
+	<styles>
+		<include src="file://{resources}/styles/dotastyles.css" />
+		<include src="file://{resources}/styles/custom_game/game_setup.css" />
+	</styles>
+	<!--<scripts>
+		<include src="file://{resources}/scripts/custom_game/game_setup.js" />
+	</scripts>-->
+	<script>
+		$( "#BaseURL_Input" ).text = CustomNetTables.GetTableValue( "game_state", "base_url" )["value"];
+		
+		function OnURLEntered( data ){
+			GameEvents.SendCustomGameEventToServer( "base_url_changed", { "url" : $( "#BaseURL_Input" ).text } );
+		}
+		
+		function Start()
+		{		
+			$.Msg("Start");
+			Game.SetAutoLaunchEnabled( true );
+			Game.SetRemainingSetupTime (0);
+		}
+	</script>
+	<Panel class="AIFrameWorkSetupRoot">
+		<Panel id="SettingsPanel">
+			<Label text="Set Bot URL" />
+			<TextEntry id="BaseURL_Input" maxchars="500" placeholder="Type here..." oninputsubmit="OnURLEntered()" />
+			<Button id="SubmitButton" onactivate="Start()">
+				<Label text="Start"/>
+			</Button>
+		</Panel>
+	</Panel>
+</root>
