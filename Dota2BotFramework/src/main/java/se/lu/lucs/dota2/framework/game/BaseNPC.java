@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class BaseNPC extends BaseEntity {
     protected int level;
-    protected float[] origin;
+
 //                    --unit.absOrigin = VectorToString(eunit:GetAbsOrigin())
 //                    --unit.center = VectorToString(eunit:GetCenter())
 
@@ -15,7 +15,7 @@ public class BaseNPC extends BaseEntity {
     protected boolean deniable;
     protected boolean disarmed;
     protected boolean rooted;
-    protected String name;
+
     protected int team;
     protected float attackRange;
     protected int attackTarget;
@@ -50,16 +50,6 @@ public class BaseNPC extends BaseEntity {
 
     public float getMaxMana() {
         return maxMana;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public float[] getOrigin() {
-        return origin;
     }
 
     public int getTeam() {
@@ -132,16 +122,6 @@ public class BaseNPC extends BaseEntity {
 
     public void setMaxMana( float maxMana ) {
         this.maxMana = maxMana;
-    }
-
-    @Override
-    public void setName( String name ) {
-        this.name = name;
-    }
-
-    @Override
-    public void setOrigin( float[] origin ) {
-        this.origin = origin;
     }
 
     public void setRooted( boolean rooted ) {
