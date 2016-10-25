@@ -70,46 +70,38 @@ function Dota2AI:Buy(eHero, result)
 		return
 	end
 	
-	local shop = Entities:FindByClassnameWithin(nil, "trigger_shop", eHero:GetOrigin(), 0.01)
+
 	local targetSlot = -1
-	
-	
-	if shop then
-		for i=DOTA_ITEM_SLOT_1 ,DOTA_ITEM_SLOT_6 ,1 do 
-			if not eHero:GetItemInSlot(i) then
-				targetSlot = i
-				break
-			end
-		end
-	else		
-		for i=DOTA_STASH_SLOT_1  ,DOTA_STASH_SLOT_6 ,1 do 
-			if not eHero:GetItemInSlot(i) then
-				targetSlot = i
-				break
-			end
+	for i=DOTA_ITEM_SLOT_1 ,DOTA_ITEM_SLOT_6 ,1 do 
+		if not eHero:GetItemInSlot(i) then
+			targetSlot = i
+			break
 		end
 	end
+	
 	
 	if targetSlot < 0 then
 		Warning(eHero:GetName() .. " tried to buy " .. itemName .. " but has no space left")		
+		--TODO buy into stash
 		return
 	end
 	
-	
-	
-	
-	--TODO find out how to figure out in which shop we are		
-	eHero:SpendGold(itemCost, DOTA_ModifyGold_PurchaseItem) --should the reason take DOTA_ModifyGold_PurchaseConsumable into account?  
-	local item = CreateItem(itemName, eHero, eHero)
-	
-	if shop then 
-		eHero:AddItem(item)
+	local eShop = Entities:FindByClassnameWithin(nil, "trigger_shop", eHero:GetOrigin(), 0.01)		
+	if eShop then 
+		local shopType = GetShopType(eShop:GetModelName())
+		if IsAvailableInShop(itemName, shopType) then
+			eHero:SpendGold(itemCost, DOTA_ModifyGold_PurchaseItem) --should the reason take DOTA_ModifyGold_PurchaseConsumable into account?  
+			local eItem = CreateItem(itemName, eHero, eHero)		
+			eHero:AddItem(eItem)			
+		else
+			--TODO ping actually the right shop
+			PingNearestShop(eHero)
+			Warning("Shop is of type " .. shopType)		
+			return
+		end
 	else
-		--TODO we drop items in the game world here, as I don't know how to move things into the stash first
-		--Hero:AddItem will always add to the unit's iventory
-		--Though we can call Hero:SwapItems afterwards, but e.g. Tangos will stack first--we have to code around stacking items
-		local goodfountain = Entities:FindByName(nil, "ent_dota_fountain_good")
-		CreateItemOnPositionSync(goodfountain:GetOrigin(), item) -- TODO obv wrong
+		PingNearestShop(eHero)
+		return
 	end
 	
 	Say(nil, eHero:GetName() .." bought " .. itemName, false)
