@@ -43,6 +43,7 @@ public class Lina extends BaseBot {
     private Mode mode = Mode.DISABLED;
     private boolean shouldRetreat;
     private boolean shouldBuyTango;
+    private boolean shouldSellTango;
 
     public Lina() {
         System.out.println( "Creating Lina" );
@@ -83,6 +84,9 @@ public class Lina extends BaseBot {
                 shouldRetreat = true;
                 mode = Mode.DISABLED;
                 break;
+            case "lina sell tango":
+                shouldSellTango = true;
+                break;
             case "lina buy tango":
                 shouldBuyTango = true;
                 break;
@@ -107,6 +111,10 @@ public class Lina extends BaseBot {
         if (shouldBuyTango) {
             shouldBuyTango = false;
             return buy( "item_tango" );
+        }
+        if (shouldSellTango) {
+            shouldSellTango = false;
+            return sell(0 );
         }
         if (mode == Mode.DISABLED) {
             if (shouldRetreat) {
@@ -176,6 +184,12 @@ public class Lina extends BaseBot {
         BUY.setItem( item );
 
         return BUY;
+    }
+    
+    private Command sell( int slot ) {
+        SELL.setSlot( 0 );
+
+        return SELL;
     }
 
     private Command castSpell( Hero lina, BaseEntity target, World world ) {

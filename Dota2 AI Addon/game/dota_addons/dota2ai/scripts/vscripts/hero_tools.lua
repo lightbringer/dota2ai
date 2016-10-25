@@ -89,10 +89,13 @@ function Dota2AI:Buy(eHero, result)
 	local eShop = Entities:FindByClassnameWithin(nil, "trigger_shop", eHero:GetOrigin(), 0.01)		
 	if eShop then 
 		local shopType = GetShopType(eShop:GetModelName())
+		
 		if IsAvailableInShop(itemName, shopType) then
-			eHero:SpendGold(itemCost, DOTA_ModifyGold_PurchaseItem) --should the reason take DOTA_ModifyGold_PurchaseConsumable into account?  
+			
 			local eItem = CreateItem(itemName, eHero, eHero)		
+			EmitSoundOn("General.Buy", eHero)
 			eHero:AddItem(eItem)			
+			eHero:SpendGold(itemCost, DOTA_ModifyGold_PurchaseItem) --should the reason take DOTA_ModifyGold_PurchaseConsumable into account?  
 		else
 			--TODO ping actually the right shop
 			PingNearestShop(eHero)
@@ -108,7 +111,23 @@ function Dota2AI:Buy(eHero, result)
 end
 
 function Dota2AI:Sell(eHero, result)
-  Warning("Implement me. Sell")
+	local slot = result.slot
+	
+	local eShop = Entities:FindByClassnameWithin(nil, "trigger_shop", eHero:GetOrigin(), 0.01)		
+	if eShop then 
+		local eItem = eHero:GetItemInSlot(slot)
+		if eItem then
+			--TODO GetCost does not return the value altered, i.e. halved
+			EmitSoundOn("General.Sell", eHero)
+			eHero:ModifyGold(eItem:GetCost(), true, DOTA_ModifyGold_SellItem ) 
+			eHero:RemoveItem(eItem)
+		else
+			Warning("No item in slot " .. slot)
+		end
+	else
+		PingNearestShop(eHero)
+		Warning("Bot tried to sell item outside shop")
+	end
 end
 
 function Dota2AI:UseItem(eHero, result)
