@@ -93,10 +93,11 @@ function Dota2AI:JSONWorld(eHero)
 	world.entities = {}
 	
 
-	--TODO there are apparently around 2300 trees on the map. Sending those that are NOT standing might be more efficient
+	--there are apparently around 2300 trees on the map. Sending those that are NOT standing is much more efficient
+	--TODO provide the client with a list of tree entities at the beginning of the match
 	local tree = Entities:FindByClassname(nil, "ent_dota_tree")
 	while tree ~= nil do
-		if eHero:CanEntityBeSeenByMyTeam(tree) and tree:IsStanding() then
+		if eHero:CanEntityBeSeenByMyTeam(tree) and not tree:IsStanding() then
 			world.entities[tree:entindex()]=self:JSONtree(tree)
 		end		
 		tree = Entities:FindByClassname(tree, "ent_dota_tree")
