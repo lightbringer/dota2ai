@@ -49,8 +49,7 @@ function Dota2AI:InitGameMode()
 	GameRules:SetCustomGameSetupTimeout( Dota2AI.ConfigUITimeout ) -- skip the custom team UI with 0, or do indefinite duration with -1
 	
 	
-	GameMode:SetContextThink( "Dota2AI:GameThink", function() return self:GameThink() end, 0 )
-
+	
 	-- Events
 	ListenToGameEvent( "game_rules_state_change", Dynamic_Wrap( Dota2AI, 'OnGameRulesStateChange' ), self )
 	ListenToGameEvent("dota_player_pick_hero", Dynamic_Wrap(Dota2AI, 'OnHeroPicked'), self)
@@ -60,13 +59,5 @@ function Dota2AI:InitGameMode()
 	CustomGameEventManager:RegisterListener( "base_url_changed", function(...) return self:OnBaseURLChanged( ... ) end  )	
  end
 
-
-
---------------------------------------------------------------------------------
--- Main Think
---------------------------------------------------------------------------------
-function Dota2AI:GameThink()
-	return 0.5
-end
 
 print( "Dota2 AI  game mode loaded." )
