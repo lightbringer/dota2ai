@@ -55,7 +55,7 @@ end
 		local heroEntity = EntIndexToHScript(heroindex)
 		if heroEntity:IsControllableByAnyPlayer() then 
 			--heroEntity:SetControllableByPlayer(2, false) -- TODO would revoke control from the local client
-			heroEntity:SetContextThink( "DotaPvP:BotThink", function() return Dota2AI:BotThink(heroEntity) end, 0.25 )
+			heroEntity:SetContextThink( "Dota2AI:BotThink", function() return Dota2AI:BotThink(heroEntity) end, 0.33 )
 		end
 	  
 		Say(nil, "Bot (team = " .. heroEntity:GetTeam()..", user=".. userid.." picked " .. heroEntity:GetName(), false)      
@@ -134,7 +134,7 @@ end
 	  if self._Error == true then
 		return 0
 	  else
-		return 0.5
+		return 0.33
 	  end 
  end
  
@@ -179,7 +179,12 @@ end
 	if result["StatusCode"] == 200 then       
       local command = package.loaded['game/dkjson'].decode(result['Body'])    
 	  print("Bot returned: \"" .. command.hero .. "\"")
-		CreateHeroForPlayer( command.hero, PlayerResource:GetPlayer(0)	) 
+	  
+	  PrecacheUnitByNameAsync(command.hero, 
+		function( )
+			CreateHeroForPlayer( command.hero, PlayerResource:GetPlayer(0)	) 
+		end,
+		0)	  		
     else
       Dota2AI.Error = true 
       for k,v in pairs( result ) do

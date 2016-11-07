@@ -40,6 +40,14 @@ end
 	local result = package.loaded['game/dkjson'].decode(reply)
 	local command = result.command
 	
+	--TODO deal with abilities that the hero can interrupt
+	local eAbility = eHero:GetCurrentActiveAbility()
+	if eAbility then 
+		self:Noop(eHero, result)
+		Warning("active not null")
+		return
+	end
+	
 	if command == "MOVE"  then
 		self:MoveTo(eHero, result)
 	elseif command == "ATTACK" then
@@ -79,6 +87,7 @@ function Dota2AI:Buy(eHero, result)
 		end
 	end
 	
+	--TODO item availability is missing
 	
 	if targetSlot < 0 then
 		Warning(eHero:GetName() .. " tried to buy " .. itemName .. " but has no space left")		
@@ -113,8 +122,8 @@ end
 function Dota2AI:Sell(eHero, result)
 	local slot = result.slot
 	
-	local eShop = Entities:FindByClassnameWithin(nil, "trigger_shop", eHero:GetOrigin(), 0.01)		
-	if eShop then 
+	
+	if eHero:CanSellItems() then 
 		local eItem = eHero:GetItemInSlot(slot)
 		if eItem then
 			--TODO GetCost does not return the value altered, i.e. halved
@@ -131,7 +140,13 @@ function Dota2AI:Sell(eHero, result)
 end
 
 function Dota2AI:UseItem(eHero, result)
-  Warning("Implement me. UseItem")
+	local slot = result.slot
+	local eItem = eHero:GetItemInSlot(slot)
+	if eItem then
+		self:UseAbility(eHero, eItem)
+	else
+		Warning("Bot tried to use item in empty slot")
+	end
 end
  
  function Dota2AI:Noop(eHero, result)
@@ -151,25 +166,42 @@ function Dota2AI:Attack(eHero, result)
 end
 
 function Dota2AI:Cast(eHero, result)
-	local ability = eHero:GetAbilityByIndex(result.ability)
-	local behaviour = ability:GetBehavior()
+	local eAbility = eHero:GetAbilityByIndex(result.ability)
+	self:UseAbility(eHero, eAbility)		
+end
+
+function Dota2AI:UseAbility(eHero, eAbility)
+	local level = eAbility:GetLevel()
+	local manaCost = eAbility:GetManaCost(level)
+	local player = eHero:GetPlayerOwnerID()
 	
-	--There is some logic missing here to check for range and make the hero face the right direction
-	
-	if (BitAND(behaviour, DOTA_ABILITY_BEHAVIOR_NO_TARGET)) then
-		Say(nil ,eHero:GetName() .. " casting " .. ability:GetName(), false)
-		eHero:CastAbilityNoTarget(ability, 0) --TODO 0 needs to be changed
-	elseif(BitAND(behaviour, DOTA_ABILITY_BEHAVIOR_UNIT_TARGET )) then
-		local target = EntIndexToHScript(result.target)
-		if target:IsAlive() then
-			Say(nil ,eHero:GetName() .. " casting " .. ability:GetName() .. " on unit " .. target:GetName(), false)		
-			eHero:CastAbilityOnTarget(target, ability, 0) --TODO 0 needs to be changed
-		end
-	elseif(BitAND(behaviour, DOTA_ABILITY_BEHAVIOR_POINT )) then
-		Say(nil ,eHero:GetName() .. " casting " .. ability:GetName() .. " on " .. result.x .. ", " .. result.y .. ", " .. result.z, false)
-		eHero:CastAbilityOnPosition(Vector(result.x, result.y, result.z), ability, 0)--TODO 0 needs to be changed
+	if eHero:GetMana() < manaCost then 
+		Warning("Bot tried to use ability without mana")
+	elseif eAbility:GetCooldownTimeRemaining() > 0 then
+		Warning("Bot tried to use ability still on cooldown")
 	else
-		Warning(eHero:GetName() .. " sent invalid cast command " .. behaviour)
-		self._Error = true
+		eAbility:StartCooldown(eAbility:GetCooldown(level))
+		eAbility:PayManaCost()
+		eAbility:OnSpellStart()
+		local behaviour = eAbility:GetBehavior()
+		--There is some logic missing here to check for range and make the hero face the right direction	
+		if (BitAND(behaviour, DOTA_ABILITY_BEHAVIOR_NO_TARGET)) then
+			Say(nil ,eHero:GetName() .. " casting " .. eAbility:GetName(), false)
+			eHero:CastAbilityNoTarget(eAbility, player)
+		elseif(BitAND(behaviour, DOTA_ABILITY_BEHAVIOR_UNIT_TARGET )) then
+			local target = EntIndexToHScript(result.target)
+			if target:IsAlive() then
+				Say(nil ,eHero:GetName() .. " casting " .. eAbility:GetName() .. " on unit " .. target:GetName(), false)		
+				eHero:CastAbilityOnTarget(target, eAbility, player)
+			end
+		elseif(BitAND(behaviour, DOTA_ABILITY_BEHAVIOR_POINT )) then
+			Say(nil ,eHero:GetName() .. " casting " .. eAbility:GetName() .. " on " .. result.x .. ", " .. result.y .. ", " .. result.z, false)
+			eHero:CastAbilityOnPosition(Vector(result.x, result.y, result.z), eAbility, player)
+		else
+			Warning(eHero:GetName() .. " sent invalid cast command " .. behaviour)
+			self._Error = true
+		end
+		
+		
 	end
 end
