@@ -43,6 +43,10 @@ end
 	if eUnit:IsHero() then
 		unit.gold = eUnit:GetGold()
 		unit.type = "Hero"
+		unit.xp = eUnit:GetCurrentXP()
+		unit.deaths = eUnit:GetDeaths()
+		unit.denies = eUnit:GetDenies()
+		
 		-- Abilities are actually in CBaseNPC, but we'll just send them for Heros to avoid cluttering the JSON--
 		unit.abilities = {}
 		local abilityCount = eUnit:GetAbilityCount() - 1 --minus 1 because lua for loops are upper boundary inclusive
