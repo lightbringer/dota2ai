@@ -18,7 +18,7 @@ The Dota2 mode is a copy of the basic game mode and the default map, but acts as
 The mod itself can't harm your computer, as the Dota2 LUA Sandbox is very restrictive about what it can or can't do. It uses a HTTP connection to talk to bot authors' software. However, as these are mostly executable programs, standard caution should be applied - like with everthing that you download from the internet.
 
 ##What's the state of the mod? Does it come with cool bots to play against with?
-No. This is a research project and should encourage people to contribute their own AIs. Not all things a human can do in the game are currently implemented. I started with some basic things like moving, attack, casting speels, and buying and selling items. However, I decided to put it up on github so others can contribute and this project hopefully gains some traction.
+No. This is a research project and should encourage people to contribute their own AIs. Not all things a human can do in the game are currently implemented. I started with some basic things like moving, attack, casting spells, and buying and selling items. However, I decided to put it up on github so others can contribute and this project hopefully gains some traction.
 
 ##I heard about bots before, it's about cheating, right?
 No. This is a copy of the base game (a custom game). You can't use this to improve your MMR online.
