@@ -12,14 +12,16 @@ function Dota2AI:OnGameRulesStateChange()
     self:Reset()
   elseif nNewState == DOTA_GAMERULES_STATE_HERO_SELECTION then
     print( "OnGameRulesStateChange: Hero Selection" )
-	BotPick()
-	PlayerResource:SetCustomTeamAssignment( 0, DOTA_TEAM_FIRST  ) -- put PlayerID 0 on Radiant team (== team 2)
-	--Tutorial:StartTutorialMode()	
+	PlayerResource:SetCustomTeamAssignment( 0, DOTA_TEAM_FIRST  ) -- put PlayerID 0 on Radiant team (== team 2)	
+	PlayerResource:GetPlayer(0):MakeRandomHeroSelection()	--FIXME
   elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
     print( "OnGameRulesStateChange: Pre Game Selection" )
     SendToServerConsole( "dota_dev forcegamestart" ) -- Skip the draft process
   elseif nNewState == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
     print( "OnGameRulesStateChange: Game In Progress" )
+	BotPick()
+	
+	
 	
 	--Throwing in more bots to complete the teams. Activate the built-in AI if you like. 
 	--Via the parameters, you can set the hero, initial lane, skill level, and team for a bot. The game does not
@@ -45,21 +47,13 @@ end
 -- Once a hero is picked, a "context think function" is set that make makes a web call every time it's called
 --------------------------------------------------------------------------------
 
- function Dota2AI:OnHeroPicked (event)
-	local userid = event.player
-	
+ function Dota2AI:OnHeroPicked ()
 	-- limited to player one for now
-	if userid == 1 then
-		local heroindex = event.heroindex;
-		local class = event.hero   
-		local heroEntity = EntIndexToHScript(heroindex)
-		if heroEntity:IsControllableByAnyPlayer() then 
-			--heroEntity:SetControllableByPlayer(2, false) -- TODO would revoke control from the local client
-			heroEntity:SetContextThink( "Dota2AI:BotThink", function() return Dota2AI:BotThink(heroEntity) end, 0.33 )
-		end
-	  
-		Say(nil, "Bot (team = " .. heroEntity:GetTeam()..", user=".. userid.." picked " .. heroEntity:GetName(), false)      
-	end
+	local heroEntity = PlayerResource:GetSelectedHeroEntity(0)
+	heroEntity:SetContextThink( "Dota2AI:BotThink", function() return Dota2AI:BotThink(heroEntity) end, 0.33 )
+	 
+	Say(nil, "Bot (team = " .. heroEntity:GetTeam()..", user=0 picked " .. heroEntity:GetName(), false)    
+		
  end
 
 
@@ -182,7 +176,9 @@ end
 	  
 	  PrecacheUnitByNameAsync(command.hero, 
 		function( )
-			CreateHeroForPlayer( command.hero, PlayerResource:GetPlayer(0)	) 
+			--CreateHeroForPlayer( command.hero, PlayerResource:GetPlayer(0)	) 
+			PlayerResource:ReplaceHeroWith( 0, command.hero, 0, 0) --FIXME
+			Dota2AI:OnHeroPicked()
 		end,
 		0)	  		
     else

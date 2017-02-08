@@ -37,22 +37,19 @@ function Dota2AI:InitGameMode()
 	CustomNetTables:SetTableValue( "game_state", "base_url", { value =  Dota2AI.baseURL} )
 	local GameMode = GameRules:GetGameModeEntity()
 	
-	GameMode:SetTowerBackdoorProtectionEnabled( true )
-	--GameMode:SetFixedRespawnTime( 4 )
 	GameMode:SetBotThinkingEnabled( true ) -- the ConVar is currently disabled in C++
 	--GameMode:SetFogOfWarDisabled(true)
-	-- Set bot mode difficulty: can try 
-	--GameMode:SetCustomGameDifficulty( 1 )
-
-	--GameRules:SetUseUniversalShopMode( false )
-	--GameRules:SetPreGameTime( 1 )
+	
+	GameRules:SetShowcaseTime( 0 )
+	GameRules:SetStrategyTime( 0 )
+	GameRules:SetStrategyTime( 0 )
+	GameRules:SetHeroSelectionTime( 0 )
 	GameRules:SetCustomGameSetupTimeout( Dota2AI.ConfigUITimeout ) -- skip the custom team UI with 0, or do indefinite duration with -1
 	
 	
 	
 	-- Events
 	ListenToGameEvent( "game_rules_state_change", Dynamic_Wrap( Dota2AI, 'OnGameRulesStateChange' ), self )
-	ListenToGameEvent("dota_player_pick_hero", Dynamic_Wrap(Dota2AI, 'OnHeroPicked'), self)
 	ListenToGameEvent("player_chat", Dynamic_Wrap(Dota2AI, 'OnPlayerChat'), self)
 	
 
