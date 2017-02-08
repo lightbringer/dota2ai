@@ -1,7 +1,9 @@
 package se.lu.lucs.dota2.service;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -51,18 +53,34 @@ public class Dota2AIService extends NanoHTTPD {
         }
 
         final Class<Bot> botClass = (Class<Bot>) Class.forName( args[0] );
-        new Dota2AIService( botClass.newInstance() );
-
+        final Dota2AIService service = new Dota2AIService( botClass.newInstance() );
+        try {
+            final Class<?> visualizerClass = Class.forName( "se.lu.lucs.visualizer.MatchVisualizer" );
+            service.add( (FrameListener) visualizerClass.newInstance() );
+        }
+        catch (final ClassNotFoundException e) {
+            //NOP
+        }
+        service.start( NanoHTTPD.SOCKET_READ_TIMEOUT, false );
     }
+
+    private final Set<FrameListener> listeners;
 
     private final Bot bot;
 
     public Dota2AIService( Bot bot ) throws IOException {
         super( 8080 );
+
         this.bot = bot;
-        start( NanoHTTPD.SOCKET_READ_TIMEOUT, false );
+
+        listeners = new HashSet<>();
+
         LOGGER.fine( "Dota2AIService created" );
 
+    }
+
+    public void add( FrameListener l ) {
+        listeners.add( l );
     }
 
     /**
@@ -147,7 +165,7 @@ public class Dota2AIService extends NanoHTTPD {
             return newFixedLengthResponse( Response.Status.METHOD_NOT_ALLOWED, "text/plain", "Only POST allowed" );
         }
 
-        final String method = session.getUri().substring( session.getUri().lastIndexOf( '/' ) + 1 );
+        final String method = session.getUri().substring( session.getUri().lastIndexOf( '/' ) + 1 ).toLowerCase();
         Response res;
 
         try {
@@ -192,6 +210,7 @@ public class Dota2AIService extends NanoHTTPD {
 
     private Response update( IHTTPSession session ) throws IOException {
         final World world = MAPPER.readValue( session.getInputStream(), World.class );
+        listeners.stream().forEach( l -> l.update( world ) );
         final Command c = bot.update( world );
         return buildJSONResponse( c );
     }
