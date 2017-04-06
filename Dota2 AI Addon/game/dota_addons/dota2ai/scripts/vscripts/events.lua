@@ -59,7 +59,7 @@ end
 
 --FIXME 
  --function Dota2AI:Reset()
-  --request = CreateHTTPRequest( "POST", Dota2AI.baseURL .. "/reset") 
+  --request = CreateHTTPRequestScriptVM( "POST", Dota2AI.baseURL .. "/reset") 
   --request:SetHTTPRequestRawPostBody('application/json', "")
  --end
 
@@ -82,7 +82,7 @@ end
  
  -- Helper function for Dota2AI:OnHeroLevelUp
   function Dota2AI:BotLevelUp(heroEntity) 
-	  request = CreateHTTPRequest( "POST", Dota2AI.baseURL .. "/levelup")
+	  request = CreateHTTPRequestScriptVM( "POST", Dota2AI.baseURL .. "/levelup")
 	  request:SetHTTPRequestHeaderValue("Accept", "application/json")
 	  request:SetHTTPRequestHeaderValue("Content-Length", "0")
 	  request:Send( function( result ) 
@@ -109,7 +109,7 @@ end
 	  if heroEntity:GetAbilityPoints() > 0 then
 		self:BotLevelUp(heroEntity)
 	  end
-	  request = CreateHTTPRequest( "POST", Dota2AI.baseURL .. "/update")
+	  request = CreateHTTPRequestScriptVM( "POST", Dota2AI.baseURL .. "/update")
 	  request:SetHTTPRequestHeaderValue("Accept", "application/json")
 	  request:SetHTTPRequestHeaderValue("X-Jersey-Tracing-Threshold", "VERBOSE" )
 	  request:SetHTTPRequestRawPostBody('application/json', self:JSONWorld(heroEntity))
@@ -139,7 +139,7 @@ end
  -- I used it to control my test implementation, i.e. "bot go", "bot retreat", "bot attack" as simple chat commands
  --------------------------------------------------------------------------------
  function Dota2AI:OnPlayerChat(event)
-  request = CreateHTTPRequest( "POST", Dota2AI.baseURL .. "/chat")
+  request = CreateHTTPRequestScriptVM( "POST", Dota2AI.baseURL .. "/chat")
   request:SetHTTPRequestHeaderValue("Accept", "application/json")
   request:SetHTTPRequestHeaderValue("X-Jersey-Tracing-Threshold", "VERBOSE" )
   request:SetHTTPRequestRawPostBody('application/json', self:JSONChat(event))
@@ -164,7 +164,7 @@ end
  
  function BotPick()
 	local baseURL = CustomNetTables:GetTableValue( "game_state", "base_url" )["value"]
-	request = CreateHTTPRequest( "POST", baseURL .. "/select")
+	request = CreateHTTPRequestScriptVM( "POST", baseURL .. "/select")
 	request:SetHTTPRequestHeaderValue("Accept", "application/json")
 	request:SetHTTPRequestHeaderValue("X-Jersey-Tracing-Threshold", "VERBOSE" )
 	request:SetHTTPRequestHeaderValue("Content-Length", "0")
