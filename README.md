@@ -49,4 +49,4 @@ I put the code on github so everybody can fork it and improve it. Familiarising 
 
 If you'd like to reach out, pitch me a mail.
 
-Tobias Mahlmann, PhD (Lund University Sweden) tobias.mahlmann@lucs.lu.se
+Tobias Mahlmann, PhD t.mahlmann@gmail.com
